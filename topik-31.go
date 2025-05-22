@@ -13,11 +13,8 @@ const (
 	KategoriOlahraga = "Olahraga"
 
 	MusimPanas  = "Panas"
-	MusimHujan  = "Hujan"
 	MusimDingin = "Dingin"
 
-	AcaraKantor   = "Kantor"
-	AcaraPesta    = "Pesta"
 	AcaraKasual   = "Kasual"
 	AcaraFormal   = "Formal"
 	AcaraOlahraga = "Olahraga"
@@ -36,6 +33,22 @@ type Pakaian struct {
 
 var daftarPakaian [MaksData]Pakaian
 var jumlahPakaian int = 0
+
+func kapitalisasiKata(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	runes := []rune(s)
+	if runes[0] >= 'a' && runes[0] <= 'z' {
+		runes[0] = runes[0] - ('a' - 'A')
+	}
+	for i := 1; i < len(runes); i++ {
+		if runes[i] >= 'A' && runes[i] <= 'Z' {
+			runes[i] = runes[i] + ('a' - 'A')
+		}
+	}
+	return string(runes)
+}
 
 func input(prompt string) string {
 	fmt.Print(prompt)
@@ -61,13 +74,23 @@ func tambahPakaian() {
 	}
 	var p Pakaian
 	p.ID = jumlahPakaian + 1
-	p.Nama = input("Nama Pakaian: ")
-	p.Warna = input("Warna: ")
-	p.Kategori = input("Kategori (Kasual/Formal/Olahraga): ")
-	p.TingkatFormal = inputInt("Tingkat Formalitas (1-5): ")
+	p.Nama = kapitalisasiKata(input("Nama Pakaian: "))
+	p.Warna = kapitalisasiKata(input("Warna: "))
+	p.Kategori = kapitalisasiKata(input("Kategori (Kasual/Formal/Olahraga): "))
+	p.TingkatFormal = inputInt("Tingkat Formalitas (1-3): ")
+
+	validMusim := false
+	for !validMusim {
+		p.Musim = kapitalisasiKata(input("Cocok untuk musim apa? (Panas/Dingin): "))
+		if p.Musim == "Panas" || p.Musim == "Dingin" {
+			validMusim = true
+		} else {
+			fmt.Println("Musim hanya boleh Panas atau Dingin.")
+		}
+	}
+
+	p.Acara = kapitalisasiKata(input("Cocok untuk acara apa? (Kasual/Formal/Olahraga): "))
 	p.TerakhirDipakai = inputInt("Tanggal Terakhir Dipakai (YYYYMMDD): ")
-	p.Musim = input("Cocok untuk musim apa? (Panas/Hujan/Dingin): ")
-	p.Acara = input("Cocok untuk acara apa? (Kasual/Formal/Olahraga/Kantor/Pesta): ")
 
 	daftarPakaian[jumlahPakaian] = p
 	jumlahPakaian++
@@ -104,13 +127,23 @@ func ubahPakaian() {
 		return
 	}
 	p := &daftarPakaian[idx]
-	p.Nama = input("Nama baru: ")
-	p.Warna = input("Warna baru: ")
-	p.Kategori = input("Kategori baru: ")
-	p.TingkatFormal = inputInt("Tingkat Formalitas baru (1-5): ")
+	p.Nama = kapitalisasiKata(input("Nama baru: "))
+	p.Warna = kapitalisasiKata(input("Warna baru: "))
+	p.Kategori = kapitalisasiKata(input("Kategori baru (Kasual/Formal/Olahraga): "))
+	p.TingkatFormal = inputInt("Tingkat Formalitas baru (1-3): ")
+
+	validMusim := false
+	for !validMusim {
+		p.Musim = kapitalisasiKata(input("Musim baru (Panas/Dingin): "))
+		if p.Musim == "Panas" || p.Musim == "Dingin" {
+			validMusim = true
+		} else {
+			fmt.Println("Musim hanya boleh Panas atau Dingin.")
+		}
+	}
+
+	p.Acara = kapitalisasiKata(input("Acara baru (Kasual/Formal/Olahraga): "))
 	p.TerakhirDipakai = inputInt("Tanggal Terakhir Dipakai baru (YYYYMMDD): ")
-	p.Musim = input("Musim baru (Panas/Hujan/Dingin): ")
-	p.Acara = input("Acara baru (Kasual/Formal/Olahraga/Kantor/Pesta): ")
 	fmt.Println("Pakaian berhasil diubah.")
 }
 
@@ -155,11 +188,8 @@ func urutkanPakaian() {
 	for i := 1; i < jumlahPakaian; i++ {
 		key := daftarPakaian[i]
 		j := i - 1
-		// Pastikan `)` penutup kondisi dan `{` pembuka blok loop berada di baris yang sama
-		for j >= 0 &&
-			(pilih == 1 && ((urut == 1 && daftarPakaian[j].TingkatFormal > key.TingkatFormal) || (urut == 2 && daftarPakaian[j].TingkatFormal < key.TingkatFormal))) ||
-			(pilih == 2 && ((urut == 1 && daftarPakaian[j].TerakhirDipakai > key.TerakhirDipakai) || (urut == 2 && daftarPakaian[j].TerakhirDipakai < key.TerakhirDipakai))) {
-			i
+		for j >= 0 && ((pilih == 1 && ((urut == 1 && daftarPakaian[j].TingkatFormal > key.TingkatFormal) || (urut == 2 && daftarPakaian[j].TingkatFormal < key.TingkatFormal))) ||
+			(pilih == 2 && ((urut == 1 && daftarPakaian[j].TerakhirDipakai > key.TerakhirDipakai) || (urut == 2 && daftarPakaian[j].TerakhirDipakai < key.TerakhirDipakai)))) {
 			daftarPakaian[j+1] = daftarPakaian[j]
 			j--
 		}
@@ -170,8 +200,8 @@ func urutkanPakaian() {
 }
 
 func rekomendasiKondisi() {
-	cuaca := input("Masukkan kondisi cuaca saat ini (Panas/Hujan/Dingin): ")
-	acara := input("Masukkan jenis acara (Kasual/Formal/Olahraga/Kantor/Pesta): ")
+	cuaca := kapitalisasiKata(input("Masukkan kondisi cuaca saat ini (Panas/Dingin): "))
+	acara := kapitalisasiKata(input("Masukkan jenis acara (Kasual/Formal/Olahraga): "))
 	terbaik := -1
 	maxSkor := -1
 
@@ -183,10 +213,10 @@ func rekomendasiKondisi() {
 		if daftarPakaian[i].Acara == acara {
 			skor++
 		}
-		if daftarPakaian[i].TingkatFormal >= 3 {
+		if daftarPakaian[i].TingkatFormal >= 2 {
 			skor++
 		}
-		if skor > maxSkor || (skor == maxSkor && daftarPakaian[i].TerakhirDipakai < daftarPakaian[terbaik].TerakhirDipakai) {
+		if skor > maxSkor || (skor == maxSkor && (terbaik == -1 || daftarPakaian[i].TerakhirDipakai < daftarPakaian[terbaik].TerakhirDipakai)) {
 			maxSkor = skor
 			terbaik = i
 		}
@@ -209,7 +239,8 @@ func cariIndexByID(id int) int {
 }
 
 func main() {
-	for {
+	exit := false
+	for !exit {
 		fmt.Println("\n==== DIGITAL AI STYLIST ====")
 		fmt.Println("1. Tambah Pakaian")
 		fmt.Println("2. Ubah Pakaian")
@@ -238,7 +269,7 @@ func main() {
 			tampilkanSemuaPakaian()
 		case 8:
 			fmt.Println("Terima kasih telah menggunakan AI Stylist!")
-			return
+			exit = true
 		default:
 			fmt.Println("Pilihan tidak valid.")
 		}
